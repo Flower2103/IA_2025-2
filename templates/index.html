@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detector de Razas - IA</title>
+
+    <!-- CropperJS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #uploadLabel {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #4f46e5;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #uploadLabel:hover {
+            background: #4338ca;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        /* CONTENEDOR RECTANGULAR */
+        #preview-container {
+            width: 300px;
+            height: 300px; /* Rectangular o cuadrado, cámbialo si quieres */
+            margin: 20px auto;
+            overflow: hidden;
+            border: 4px solid #4f46e5;
+            border-radius: 10px;
+            background: #ddd;
+            position: relative;
+        }
+
+        #preview,
+        #final-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        #cropBtn {
+            padding: 12px 20px;
+            background: #16a34a;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: none;
+            margin-top: 15px;
+        }
+
+        #cropBtn:hover {
+            background: #15803d;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Detector de Raza de Perros</h1>
+    <p>Sube tu imagen y ajústala antes de analizarla</p>
+
+    <!-- BOTÓN DE SUBIR IMAGEN -->
+    <label id="uploadLabel" for="imageInput">Seleccionar imagen</label>
+    <input type="file" id="imageInput" accept="image/*">
+
+    <!-- CONTENEDOR RECTANGULAR DE PREVISUALIZACIÓN -->
+    <div id="preview-container">
+        <img id="preview">
+        <img id="final-preview"style="{% if final_image %}display:block{% else %}display:none{% endif %}"
+        src="{{ final_image if final_image else '' }}">
+
+    </div>
+
+    <!-- BOTÓN RECORTAR -->
+    <button id="cropBtn">Usar esta imagen</button>
+
+    <!-- FORMULARIO SECRETO PARA ENVIAR BASE64 -->
+    <form id="form" method="POST" action="/predict">
+        <input type="hidden" name="image" id="finalImage">
+    </form>
+
+    {% if prediccion %}
+        <div style="margin-top:20px; font-size:20px;">
+            <strong>Raza detectada:</strong> {{ prediccion }} <br>
+            <strong>Confianza:</strong> {{ confianza }}%
+        </div>
+    {% endif %}
+
+    {% if error %}
+        <div style="color:red; margin-top:20px;">{{ error }}</div>
+    {% endif %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <script>
+
+        let cropper;
+
+        document.getElementById("imageInput").addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = document.getElementById("preview");
+                const final = document.getElementById("final-preview");
+
+                img.src = event.target.result;
+                img.style.display = "block";
+                final.style.display = "none";
+
+                if (cropper) cropper.destroy();
+
+                cropper = new Cropper(img, {
+                    viewMode: 1,
+                    dragMode: "move",
+                    autoCrop: true,
+                    autoCropArea: 1.0,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    background: false,
+                    aspectRatio: 1
+                });
+
+                document.getElementById("cropBtn").style.display = "inline-block";
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Recortar y enviar al backend
+        document.getElementById("cropBtn").addEventListener("click", function() {
+            if (!cropper) return;
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 224,
+                height: 224
+            });
+
+            const base64 = canvas.toDataURL("image/jpeg");
+
+            // Mostrar imagen recortada en la MISMA ÁREA
+            const final = document.getElementById("final-preview");
+            final.src = base64;
+            final.style.display = "block";
+
+            // Ocultar la imagen original
+            document.getElementById("preview").style.display = "none";
+
+            // Enviar al servidor Flask
+            document.getElementById("finalImage").value = base64;
+            document.getElementById("form").submit();
+        });
+
+    </script>
+
+</body>
+</html>
