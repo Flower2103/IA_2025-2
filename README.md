@@ -38,8 +38,8 @@ Razas buscadas:
 |--------------------------|----------|
 | Pastor Alemán            | 200      |
 | Pastor Belga Malinois    | 200      |
-| Pastor Anatolia          | Pendiente |
-| Criollos                 | Pendiente |
+| Golden Retriever          | 200 |
+
 
 ---
 
