@@ -117,7 +117,6 @@ Por ahora solo se utiliza MobileNetV2.
 
 🔧 A mejorar:  
 - La calidad del dataset de Pastor Alemán  
-- Manejo de razas no incluidas (criollos)
 
 Cuando el usuario carga una imagen en la interfaz, el sistema la ajusta automáticamente a **224×224 px**.
 
@@ -126,9 +125,6 @@ Cuando el usuario carga una imagen en la interfaz, el sistema la ajusta automát
 # 📅 Tareas Pendientes
 
 - Revisar el dataset de Pastor Alemán y reemplazar imágenes de baja calidad.  
-- Añadir 200+ imágenes de Pastor Anatolia.  
-- Añadir 200+ imágenes de perros criollos.  
-- Implementar un umbral de confianza para clasificar posibles perros criollos.  
 - Mejorar la interfaz web.  
 - Continuar evaluando la efectividad del modelo.
 
