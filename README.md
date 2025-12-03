@@ -28,7 +28,7 @@ Razas buscadas:
 
 - Pastor Belga Malinois  
 - Pastor Alemán  
-- (Pendientes) Pastor de Anatolia y Criollos  
+- Golden Retriever 
 
 ---
 
