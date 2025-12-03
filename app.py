@@ -13,7 +13,7 @@ from rembg import remove
 
 app = Flask(__name__)
 
-# ------------------------------
+
 #  Cargar modelo
 # ------------------------------
 MODEL_PATH = "modelo/modelo_perros_cnn.keras"
@@ -44,14 +44,21 @@ def quitar_fondo(ruta_imagen):
     return output_path
 
 
-# ------------------------------
+
 #  Ruta principal
 # ------------------------------
 @app.route("/", methods=["GET"])
 def home():
+    return render_template("home.html")
+
+# Ruta de carga de imagen
+# -------------------------------
+@app.route("/upload", methods=["GET"])
+def upload_page():
+    # Renderiza la página donde el usuario recorta y envía la imagen
     return render_template("index.html")
 
-# ------------------------------
+
 #  Ruta de predicción
 # ------------------------------
 @app.route("/predict", methods=["POST"])
@@ -65,7 +72,7 @@ def predict():
     image_data = base64.b64decode(image_b64.split(",")[1])
     input_img = io.BytesIO(image_data)
 
-    # ------------------------------
+ 
     #  Quitar fondo directamente en memoria
     # ------------------------------
     # force_return_bytes=True evita el error _io.BytesIO not supported
@@ -73,13 +80,12 @@ def predict():
     img = Image.open(io.BytesIO(output_img)).convert("RGB")
     img = img.resize((224, 224))
 
-    # ------------------------------
     #  Preparar imagen para predicción
     # ------------------------------
     img_array = np.array(img) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    # ------------------------------
+
     #  Predicción
     # ------------------------------
     pred = model.predict(img_array, verbose=0)[0]
@@ -90,7 +96,7 @@ def predict():
     raza = CLASSES[idx] if confianza >= THRESHOLD else "Raza no encontrada"
     confianza = round(confianza * 100, 2)
 
-    # ------------------------------
+   
     #  Convertir imagen final a base64 para mostrarla en la web
     # ------------------------------
     buffered = io.BytesIO()

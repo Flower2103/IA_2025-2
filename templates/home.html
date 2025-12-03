@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenido - Detector de Razas</title>
+
+<style> 
+    body {
+        font-family: Arial, sans-serif;
+        background-image: url("{{ url_for('static', filename='images/home.jpg') }}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: center;
+        color: white;
+    }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.6); /* sombra para mejor lectura */
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+        }
+
+        .start-btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .start-btn:hover {
+            background-color: #4338ca;
+        }
+    </style>
+</head>
+<body>
+    <h1>Detector de Razas de Perros</h1>
+    <p>Bienvenido a la aplicación. Haz clic en "Comenzar" para subir una imagen y analizarla.</p>
+    <a href="/upload" class="start-btn">Comenzar</a>
+</body>
+</html>

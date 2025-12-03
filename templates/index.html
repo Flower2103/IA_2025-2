@@ -11,13 +11,27 @@
 
         body {
             font-family: Arial, sans-serif;
-            background: #f3f4f6;
+            background-image: url("{{ url_for('static', filename='images/index.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
             text-align: center;
+            color: white;
             padding: 40px;
         }
 
         h1 {
             margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+        }
+        p {
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
         }
 
         #uploadLabel {
@@ -73,43 +87,55 @@
             background: #15803d;
         }
 
+        /* Mensajes de predicción */
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        #error {
+            color: red;
+            margin-top: 20px;
+        }
+
     </style>
 </head>
+
 <body>
 
-    <h1>Detector de Raza de Perros</h1>
-    <p>Sube tu imagen y ajústala antes de analizarla</p>
+        <h1>Detector de Raza de Perros</h1>
+        <p>Sube tu imagen y ajústala antes de analizarla</p>
 
-    <!-- BOTÓN DE SUBIR IMAGEN -->
-    <label id="uploadLabel" for="imageInput">Seleccionar imagen</label>
-    <input type="file" id="imageInput" accept="image/*">
+        <!-- BOTÓN DE SUBIR IMAGEN -->
+        <label id="uploadLabel" for="imageInput">Seleccionar imagen</label>
+        <input type="file" id="imageInput" accept="image/*">
 
-    <!-- CONTENEDOR RECTANGULAR DE PREVISUALIZACIÓN -->
-    <div id="preview-container">
-        <img id="preview">
-        <img id="final-preview"style="{% if final_image %}display:block{% else %}display:none{% endif %}"
-        src="{{ final_image if final_image else '' }}">
+        <!-- CONTENEDOR RECTANGULAR DE PREVISUALIZACIÓN -->
+        <div id="preview-container">
+            <img id="preview">
+            <img id="final-preview"style="{% if final_image %}display:block{% else %}display:none{% endif %}"
+            src="{{ final_image if final_image else '' }}">
 
-    </div>
-
-    <!-- BOTÓN RECORTAR -->
-    <button id="cropBtn">Usar esta imagen</button>
-
-    <!-- FORMULARIO SECRETO PARA ENVIAR BASE64 -->
-    <form id="form" method="POST" action="/predict">
-        <input type="hidden" name="image" id="finalImage">
-    </form>
-
-    {% if prediccion %}
-        <div style="margin-top:20px; font-size:20px;">
-            <strong>Raza detectada:</strong> {{ prediccion }} <br>
-            <strong>Confianza:</strong> {{ confianza }}%
         </div>
-    {% endif %}
 
-    {% if error %}
-        <div style="color:red; margin-top:20px;">{{ error }}</div>
-    {% endif %}
+        <!-- BOTÓN RECORTAR -->
+        <button id="cropBtn">Usar esta imagen</button>
+
+        <!-- FORMULARIO oculto PARA ENVIAR BASE64 -->
+        <form id="form" method="POST" action="/predict">
+            <input type="hidden" name="image" id="finalImage">
+        </form>
+
+        {% if prediccion %}
+            <div style="margin-top:20px; font-size:20px;">
+                <strong>Raza detectada:</strong> {{ prediccion }} <br>
+                <strong>Confianza:</strong> {{ confianza }}%
+            </div>
+        {% endif %}
+
+        {% if error %}
+            <div id="error">{{ error }}</div>
+        {% endif %}
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
