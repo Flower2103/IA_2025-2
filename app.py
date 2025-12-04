@@ -92,8 +92,11 @@ def predict():
     idx = np.argmax(pred)
     confianza = float(pred[idx])
 
-    THRESHOLD = 0.50
-    raza = CLASSES[idx] if confianza >= THRESHOLD else "Raza no encontrada"
+    THRESHOLD = 0.90
+    raza_raw = CLASSES[idx]
+    raza_formateada = raza_raw.replace("_", " ").title()
+    raza = raza_formateada if confianza >= THRESHOLD else "Raza no reconocida"
+
     confianza = round(confianza * 100, 2)
 
    

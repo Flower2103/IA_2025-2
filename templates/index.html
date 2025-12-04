@@ -55,7 +55,7 @@
         /* CONTENEDOR RECTANGULAR */
         #preview-container {
             width: 300px;
-            height: 300px; /* Rectangular o cuadrado, cámbialo si quieres */
+            height: 300px;
             margin: 20px auto;
             overflow: hidden;
             border: 4px solid #4f46e5;
@@ -64,13 +64,14 @@
             position: relative;
         }
 
-        #preview,
-        #final-preview {
+        #preview-container img {
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
             object-fit: contain;
-            display: none;
         }
+
 
         #cropBtn {
             padding: 12px 20px;
@@ -97,6 +98,35 @@
             margin-top: 20px;
         }
 
+        /* OVERLAY DE CARGA */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 18px;
+        }
+
+        /* SPINNER */
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #ccc;
+            border-top: 6px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
     </style>
 </head>
 
@@ -111,11 +141,21 @@
 
         <!-- CONTENEDOR RECTANGULAR DE PREVISUALIZACIÓN -->
         <div id="preview-container">
-            <img id="preview">
-            <img id="final-preview"style="{% if final_image %}display:block{% else %}display:none{% endif %}"
-            src="{{ final_image if final_image else '' }}">
 
+            <!-- Imagen por defecto -->
+            <img id="default-preview"
+                src="{{ url_for('static', filename='images/perro_default.png') }}"
+                {% if final_image %}style="display:none"{% endif %}>
+
+            <!-- Imagen subida por el usuario -->
+            <img id="preview" style="display:none">
+
+            <!-- Imagen procesada por Flask -->
+            <img id="final-preview"
+                src="{{ final_image or '' }}"
+                {% if not final_image %}style="display:none"{% endif %}>
         </div>
+
 
         <!-- BOTÓN RECORTAR -->
         <button id="cropBtn">Usar esta imagen</button>
@@ -126,16 +166,29 @@
         </form>
 
         {% if prediccion %}
-            <div style="margin-top:20px; font-size:20px;">
-                <strong>Raza detectada:</strong> {{ prediccion }} <br>
-                <strong>Confianza:</strong> {{ confianza }}%
+            <div id="resultado" style="margin-top:20px; font-size:20px;">
+                {% if prediccion == "Raza no reconocida" %}
+                    <strong style="color:#facc15;">⚠️ Raza no reconocida</strong>
+                {% else %}
+                    <strong>Raza detectada:</strong> {{ prediccion }} <br>
+                    <strong>Confianza:</strong> {{ confianza }}%
+                {% endif %}
             </div>
+        {% else %}
+            <div id="resultado" style="display:none;"></div>
         {% endif %}
 
         {% if error %}
             <div id="error">{{ error }}</div>
         {% endif %}
-    </div>
+
+
+                <!-- LOADING -->
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <p>Analizando imagen...</p>
+        </div>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
@@ -147,18 +200,35 @@
             const file = e.target.files[0];
             if (!file) return;
 
+            // ✅ BORRAR RESULTADO ANTERIOR (TEXTO)
+            const resultado = document.getElementById("resultado");
+            if (resultado) {
+                resultado.remove();   // 🔥 lo elimina completamente del DOM
+            }
+
+            const error = document.getElementById("error");
+            if (error) {
+                error.remove();
+            }
+
             const reader = new FileReader();
             reader.onload = function(event) {
-                const img = document.getElementById("preview");
-                const final = document.getElementById("final-preview");
 
-                img.src = event.target.result;
-                img.style.display = "block";
+                const preview = document.getElementById("preview");
+                const final = document.getElementById("final-preview");
+                const defaultImg = document.getElementById("default-preview");
+
+                // ✅ Mostrar imagen nueva
+                preview.src = event.target.result;
+                preview.style.display = "block";
+
+                // ✅ Ocultar todo lo anterior
+                defaultImg.style.display = "none";
                 final.style.display = "none";
 
                 if (cropper) cropper.destroy();
 
-                cropper = new Cropper(img, {
+                cropper = new Cropper(preview, {
                     viewMode: 1,
                     dragMode: "move",
                     autoCrop: true,
@@ -171,12 +241,16 @@
 
                 document.getElementById("cropBtn").style.display = "inline-block";
             };
+
             reader.readAsDataURL(file);
         });
 
         // Recortar y enviar al backend
         document.getElementById("cropBtn").addEventListener("click", function() {
             if (!cropper) return;
+
+            // Mostrar loading
+            document.getElementById("loading-overlay").style.display = "flex";
 
             const canvas = cropper.getCroppedCanvas({
                 width: 224,
@@ -192,6 +266,7 @@
 
             // Ocultar la imagen original
             document.getElementById("preview").style.display = "none";
+            document.getElementById("cropBtn").disabled = true;
 
             // Enviar al servidor Flask
             document.getElementById("finalImage").value = base64;
